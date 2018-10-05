@@ -1,36 +1,96 @@
-% Start goal
-% Move hens and foxes across the river
-solve(P) :- move(3, 3, 0, 0, 0, 0, 6).
 
-% Allowed states
-% A boat can have one of either a fox or a hen
-boat(0, 1).
-boat(1, 0).
-% A boat can have one of each
-boat(1, 1).
-% A boat can have two of either one
-boat(0, 2).
-boat(2, 0)
+solve(P) :-
+  start(Start),
+  search([Start],Q),
+  write(P), n1.
+  %reverse(Q,P).
 
-% First time crossing
-crossing(0, 0, X, Y, Foxes2, Hens2) :-
-	Y is 0. X is 0.
-crossing(Foxes1, Hens1, X, Y, Foxes2, Hens2) :-
-	boat(X, Y),
-	X =< Foxes1, Y =< Hens1,
-	((Hens1 - Y) =:= 0 | (Hens1 - Y) >= (Foxes1 - X)),
-	((Hens2 + Y) =:= 0 | (Hens2 + Y) >= (Foxes2 + X)).
+%# search(S,P,P) :-
+%# 	goal(S), !.
 
-% Crossing back to the first bank
-crossing2(0, 0, W, Z, Foxes2, Hens2) :-
-	Z is 0, W is 0,
-crossing2(Foxes1, Hens1,  W, Z, Foxes2, Hens2) :-
-	boat(W, Z),
-	W =< Foxes2, Z =< Hens2,
-	((Hens2 - W) =:= 0 | (Hens2 - Z) >= (Foxes2 - W)),
-	((Hens1 + W) =:= 0 | (Hens1 + Z) >= (Foxes1 + W)).
+%search(S, Visited, P) :-
+	%next_state(S, Nxt),
+	%safe_state(Nxt),
+	%no_loop(Nxt, Visited),
+	%search(Nxt, [Nxt | Visited], P).
 
-% Full round trip calculation
-boatride(0, 0, Foxes2, Hens2, LastFoxes, LastHens, LastMax).
-boatride(Foxes1, Hens1, Foxes2, Hens2, LastFoxes, LastHens, LastMax) :-
+%no_loop(Nxt, Visited) :-
+%	\+member(Nxt, Visite)
 
+%next_state(S, Nxt) :-
+
+
+safe(_, 0).
+safe(_, 3).
+safe(X, X).
+
+safe_state([F1, H1, B1 ]) :- 
+  safe(F1, H1).
+
+start([3,3,1]).
+goal([0,0,0]).
+path([Node | _]) :-
+  goal(Node).
+
+% Two hens move from near bank to far bank
+cross([F1, H1, 1], [F1, H2, 0]) :-
+  H1 > 1, H2 is H1 - 2, 
+  safe_state([F1, H2, _]).
+
+% Two hens move from far bank to near bank
+cross([F1, H1, 0], [F1, H2, 1]) :-
+  H1 < 2, H2 is H1 + 2,
+  safe_state([F1, H2, _]).
+
+% Two foxes move from near bank to far bank
+cross([F1, H1, 1], [F2, H1, 0]) :-
+  F1 > 1, F2 is F1 - 2, 
+  safe_state([F2, H1, _]).
+
+% Two foxes move from far bank to near bank
+cross([F1, H1, 0], [F2, H1, 1]) :-
+  F1 < 2, F2 is F1 + 2,
+  safe_state([F2, H1, _]).
+
+% One fox moves from near bank to far bank
+cross([F1, H1, 1], [F2, H1, 0]) :-
+  F1 > 0, F2 is F1 - 1,
+  safe_state([F2, H1, _]).
+
+% One fox moves from far bank to near bank
+cross([F1, H1, 0], [F2, H1, 1]) :-
+  F1 < 3, F2 is F1 + 1,
+  safe_state([F2, H1, _]).
+
+% One fox and one hen move from near bank to far bank
+cross([F1, H1, 1], [F2, H2, 0]) :-
+  F1 > 0, F2 is F1 - 1,
+  H1 > 0, H2 is H1 - 1,
+  safe_state([F2, H2, _]).
+
+% One fox and one hen move from far bank to near bank
+cross([F1, H1, 0], [F2, H2, 1]) :-
+  F1 < 3, F2 is F1 + 1,
+  H1 < 3, H2 is H1 + 1,
+  safe_state([F2, H2, _]).
+
+search([Path | _], Path) :-
+  goal(Path).
+
+search([Path | Paths], Solution) :-
+  %write(Solution), n1,
+  traverse([Path], NewPaths),
+  append(Paths, NewPaths, ResPaths),
+  search(ResPaths, Solution).
+
+traverse([Node | Path], NewPaths) :-
+  setof( [NewNode, Node | Path], ( cross(Node, NewNode), 
+    not(member(NewNode, [Node | Path])) ), NewPaths),
+  !.
+
+traverse(_, []).
+not(P) :-
+  P, !, fail.
+not(_).
+
+  
