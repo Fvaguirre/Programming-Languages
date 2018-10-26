@@ -5,7 +5,7 @@
         (else (sub_seq_calc (cdr list) sub_seq))))
 
 (define (max_sub_seq sub_seq max_len max_sub)
-  (cond ((null? sub_seq) (write max_len) max_sub)
+  (cond ((null? sub_seq) max_sub)
         ((> (length (car sub_seq)) max_len) (max_sub_seq (cdr sub_seq) (length(car sub_seq)) (car sub_seq)))
         (else (max_sub_seq (cdr sub_seq) max_len max_sub))))
   
@@ -21,5 +21,5 @@
 ;(define lis_fast list sub_seq
 ;  )
 
-(lis_slow '(1 2 3 2 4 1 2))
+(lis_slow '(2 4 3 1 2 1))
 
