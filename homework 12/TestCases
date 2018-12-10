@@ -1,0 +1,9 @@
+A = A + 2
+A = A - 2
+A = B + A
+D = C + C
+F = F + F
+Y = Y - G
+G = G + 2
+G = L + G
+F = F
